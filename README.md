@@ -1,9 +1,9 @@
 # N_Minimap
 Adds a minimap to the game.
 
-| Project    | Latest release   |
-| ---------- | ---------------- |
-| N_TitleMap | [1.0.2][release] |
+| Project   | Latest release      |
+| --------- | ------------------- |
+| N_Minimap | [Download][release] |
 
 [All RPG Maker plugins by Nolonar][hub]
 
@@ -16,4 +16,4 @@ According to [LICENSE](LICENSE).
 
 
   [hub]: https://github.com/Nolonar/RM_Plugins
-  [release]: https://github.com/Nolonar/RM_Plugins-TitleMap/releases/latest/download/N_TitleMap.js
+  [release]: https://github.com/Nolonar/RM_Plugins-Minimap/releases/latest/download/N_Minimap.js
