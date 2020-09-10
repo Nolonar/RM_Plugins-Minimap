@@ -37,20 +37,11 @@
  * @type boolean
  * @default true
  * 
- * @param display
- * @text Display
- * @desc How to choose when to display the minimap.
- * @type select
- * @option Always on
- * @option By switch
- * @default Always on
- * 
  * @param switch
- * @parent display
  * @text Switch
- * @desc The switch with which to turn the minimap on or off.
+ * @desc The switch with which to turn the minimap on or off. If no switch is chosen, minimap will be always on.
  * @type switch
- * @default 1
+ * @default 0
  * 
  * @param opacity
  * @text Minimap opacity
@@ -271,8 +262,6 @@
     //=========================================================================
     const PLUGIN_NAME = "N_Minimap";
 
-    const OPTION_DISPLAY_ALWAYS_ON = "Always on";
-    const OPTION_DISPLAY_BY_SWITCH = "By switch";
     const OPTION_POS_LEFT = "left"
     const OPTION_POS_MIDDLE = "middle"
     const OPTION_POS_RIGHT = "right"
@@ -291,8 +280,7 @@
 
     let parameters = PluginManager.parameters(PLUGIN_NAME);
     parameters.isHiddenDuringEvents = parameters.isHiddenDuringEvents !== "false";
-    parameters.display = parameters.display || OPTION_DISPLAY_ALWAYS_ON;
-    parameters.switch = Number(parameters.switch) || 1;
+    parameters.switch = Number(parameters.switch) || 0;
     parameters.opacity = Number(parameters.opacity) || 128;
     parameters.posVertical = parameters.posVertical || OPTION_POS_TOP;
     parameters.posHorizontal = parameters.posHorizontal || OPTION_POS_LEFT;
@@ -363,10 +351,7 @@
                 return;
             }
 
-            this.visible = {
-                [OPTION_DISPLAY_ALWAYS_ON]: true,
-                [OPTION_DISPLAY_BY_SWITCH]: $gameSwitches.value(parameters.switch)
-            }[parameters.display];
+            this.visible = !parameters.switch || $gameSwitches.value(parameters.switch);
         }
 
         updateTone() {
