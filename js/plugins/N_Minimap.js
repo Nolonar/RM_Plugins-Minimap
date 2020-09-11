@@ -190,7 +190,7 @@
  * @default 0, 0
  * 
  * 
- * @help Version 1.0.0
+ * @help Version 1.0.1
  * ============================================================================
  * Plugin Commands
  * ============================================================================
@@ -362,6 +362,7 @@
             // Using setTimeout to run code asynchronously (non-blocking).
             // Even with async, slow code seems to be blocking the UI.
             setTimeout(() => {
+                this.mapTexture?.destroy();
                 this.mapTexture = this.createMapTexture();
                 this.opacity = this.contentsOpacity = parameters.opacity;
             }, 0);
