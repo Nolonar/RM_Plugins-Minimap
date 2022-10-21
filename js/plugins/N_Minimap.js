@@ -190,7 +190,7 @@
  * @default 0, 0
  * 
  * 
- * @help Version 1.0.1
+ * @help Version 1.0.2
  * ============================================================================
  * Plugin Commands
  * ============================================================================
@@ -278,6 +278,11 @@
 
     const SAVE_KEY_MARKERS = "minimap_markers";
 
+    const NOTETAG_VISIBILITY_MAP = {
+        [NOTETAG_MINIMAP_ON]: true,
+        [NOTETAG_MINIMAP_OFF]: false
+    };
+
     let parameters = PluginManager.parameters(PLUGIN_NAME);
     parameters.isHiddenDuringEvents = parameters.isHiddenDuringEvents !== "false";
     parameters.switch = Number(parameters.switch) || 0;
@@ -325,33 +330,35 @@
             super.initialize(this.getRect());
             this.backOpacity = 255;
             this.opacity = this.contentsOpacity = 0;
-
-            this.updateMapTexture();
-            this.updateVisibility();
         }
 
         update() {
             super.update();
-            this.contents.clear();
-            if (!this.mapTexture) return;
+            if (!this.mapTexture) {
+                // Texture is missing, try updating it.
+                this.updateMapTexture();
+                return;
+            }
 
+            this.visible = this.isVisible();
+            if (!this.visible)
+                return;
+
+            this.contents.clear();
             this.drawMap();
             this.drawMarkers();
             this.drawPlayerPosition();
         }
 
-        updateVisibility() {
-            const notetagVisibility = {
-                [NOTETAG_MINIMAP_ON]: true,
-                [NOTETAG_MINIMAP_OFF]: false
-            };
-            const notetag = Object.keys(notetagVisibility).find(k => k in $dataMap.meta);
-            if (notetag) {
-                this.visible = notetagVisibility[notetag]
-                return;
-            }
+        isVisible() {
+            if (parameters.isHiddenDuringEvents && $gameMap.isEventRunning())
+                return false;
 
-            this.visible = !parameters.switch || $gameSwitches.value(parameters.switch);
+            const notetag = Object.keys(NOTETAG_VISIBILITY_MAP).find(k => k in $dataMap.meta);
+            if (notetag)
+                return NOTETAG_VISIBILITY_MAP[notetag]
+
+            return !parameters.switch || $gameSwitches.value(parameters.switch);
         }
 
         updateTone() {
@@ -359,6 +366,9 @@
         }
 
         updateMapTexture() {
+            if (!$dataMap)
+                return; // Can't create minimap texture without $dataMap.
+
             // Using setTimeout to run code asynchronously (non-blocking).
             // Even with async, slow code seems to be blocking the UI.
             setTimeout(() => {
@@ -537,44 +547,12 @@
         Scene_Map_onMapLoaded.call(this);
 
         minimap = new Window_Minimap();
-        minimap.updateMapTexture();
-        minimap.updateVisibility();
         this.addChild(minimap);
     };
 
     //=========================================================================
-    // Game_Event
+    // DataManager
     //=========================================================================
-    const Game_Event_start = Game_Event.prototype.start;
-    Game_Event.prototype.start = function () {
-        Game_Event_start.call(this);
-
-        if (this._starting && parameters.isHiddenDuringEvents)
-            minimap.visible = false;
-    }
-
-    //=========================================================================
-    // Game_Interpreter
-    //=========================================================================
-    const Game_Interpreter_terminate = Game_Interpreter.prototype.terminate;
-    Game_Interpreter.prototype.terminate = function () {
-        Game_Interpreter_terminate.call(this);
-
-        if (!$gameMap.isEventRunning())
-            minimap?.updateVisibility();
-    };
-
-    // Bind to "onChange" event.
-    const onChange_old = {};
-    for (const changeable of [Game_Switches, Game_Variables, Game_SelfSwitches]) {
-        onChange_old[changeable.name] = changeable.prototype.onChange;
-        changeable.prototype.onChange = function () {
-            onChange_old[this.constructor.name].call(this);
-            if (!$gameMap.isEventRunning())
-                minimap?.updateVisibility();
-        };
-    }
-
     const DataManager_makeSaveContents = DataManager.makeSaveContents;
     DataManager.makeSaveContents = function () {
         const contents = DataManager_makeSaveContents.call(this);
