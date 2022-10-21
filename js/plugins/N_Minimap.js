@@ -351,6 +351,9 @@
         }
 
         isVisible() {
+            if (SceneManager._scene !== Scene_Map)
+                return false;
+
             if (parameters.isHiddenDuringEvents && $gameMap.isEventRunning())
                 return false;
 
